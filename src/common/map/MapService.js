@@ -1440,18 +1440,26 @@
         heatmapLayerName = meta.name;
         heatmapLayerTitle = meta.title;
       }
-
+      // Try this
+      var projExtent = ol.proj.get('EPSG:3857').getExtent();
+      var startResolution = ol.extent.getWidth(projExtent) / 256;
+      var resolutions = new Array(20);
+      for (var i = 0, ii = resolutions.length; i < ii; ++i) {
+        resolutions[i] = startResolution / Math.pow(2, i);
+      }
       var source = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function(extent, resolution, projection) {
           tableViewService_.getFeaturesWfs(layer, filters, extent).then(function(response) {
-            source.addFeatures(source.readFeatures(response));
+            source.addFeatures((new ol.format.GeoJSON()).readFeatures(response, 'EPSG:3857'));
           }, function(reject) {
             dialogService_.open(translate_.instant('error'), translate_.instant('error'));
           });
         },
-        strategy: ol.loadingstrategy.tile(new ol.source.XYZ({
-          maxZoom: 19
+        strategy: ol.loadingstrategy.tile(new ol.tilegrid.TileGrid({
+          maxZoom: 19,
+          extent: [-13884991, 2870341, -7455066, 6338219],
+          resolutions: resolutions
         })),
         projection: 'EPSG:3857'
       });
