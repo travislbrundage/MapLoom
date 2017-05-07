@@ -136,6 +136,58 @@
                 featureManagerService.hide();
               }
             };
+
+            scope.pinFeature = function() {
+              // This needs to do something similar to populateSearchLayer
+              // If the special pinned search features layer, let's give it metadata "searchResults"
+              // is NOT already present on the map, then...
+              //     create the searchResults layer
+              // add this feature to the searchResults layer
+              // featureManagerService.getSelectedLayer().get('metadata')
+
+              // iterate through every layer in this map
+              // if one of the layers is "searchResults", hold this layer in a variable
+              // if this variable is still undefined after the loop, create a new layer
+              var searchResults;
+              mapService.map.getLayers().forEach(function(layer) {
+                if (layer.get('metadata').searchResults) {
+                  searchResults = layer;
+                }
+              });
+              if (!goog.isDefAndNotNull(searchResults)) {
+                searchResults = new ol.layer.Vector({
+                  metadata: {
+                    title: $translate.instant('search_results'),
+                    searchResults: true
+                  },
+                  source: new ol.source.Vector({
+                    parser: null
+                  }),
+                  style: function(feature, resolution) {
+                    return [new ol.style.Style({
+                      image: new ol.style.Circle({
+                        radius: 8,
+                        fill: new ol.style.Fill({
+                          color: '#FF0000'
+                        }),
+                        stroke: new ol.style.Stroke({
+                          color: '#000000'
+                        })
+                      })
+                    })];
+                  }
+                });
+                // add the search results to the map
+                mapService.map.addLayer(searchResults);
+              }
+              // add the clicked on feature to this layer, searchResults
+              // mapService_.getSpatialFilterLayer().getSource().getFeatureById(this.getSelectedItem().id)
+              var olFeature = featureManagerService.getSelectedLayer().getFeatureById(
+                featureManagerService.getSelectedItem().id
+              );
+              searchResults.getSource().addFeature(olFeature);
+              console.log('Pin feature called');
+            };
           }
         };
       }

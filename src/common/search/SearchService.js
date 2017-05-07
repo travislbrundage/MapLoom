@@ -17,7 +17,8 @@
       searchlayer_ = new ol.layer.Vector({
         metadata: {
           title: $translate.instant('search_results'),
-          internalLayer: true
+          //internalLayer: true
+          searchLayer: true
         },
         source: new ol.source.Vector({
           parser: null
@@ -224,6 +225,7 @@
       mapService_.map.addLayer(searchlayer_);
       forEachArrayish(results, function(result) {
         var olFeature = new ol.Feature();
+        olFeature.properties = result;
         olFeature.setGeometry(new ol.geom.Point(ol.proj.transform(result.location, 'EPSG:4326',
             mapService_.map.getView().getProjection())));
         searchlayer_.getSource().addFeature(olFeature);

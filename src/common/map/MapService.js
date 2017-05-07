@@ -477,7 +477,6 @@
       var layers = [];
 
       this.map.getLayers().forEach(function(layer) {
-
         // if not an internal layer and not difference layer
         if (goog.isDefAndNotNull(layer.get('metadata')) && // skip the internal layer that ol3 adds for vector editing
             !(layer.get('metadata').vectorEditLayer) &&

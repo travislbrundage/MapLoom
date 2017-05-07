@@ -983,8 +983,11 @@
         //all features are returned
         goog.array.forEach(layers, function(layer, index) {
           var source = layer.getSource();
+          console.log(layer);
+          // Also increment validRequestCount if the layer is an internalLayer
           if (goog.isDefAndNotNull(source.getGetFeatureInfoUrl)) {
             validRequestCount++;
+            //console.log('valid');
           }
         });
 
@@ -1041,6 +1044,7 @@
           httpService_.get(url).then(function(response) {
             var layerInfo = {};
             layerInfo.features = response.data.features;
+            console.log(layerInfo);
 
             if (layerInfo.features && layerInfo.features.length > 0 && goog.isDefAndNotNull(layers[index])) {
               layerInfo.layer = layers[index];
