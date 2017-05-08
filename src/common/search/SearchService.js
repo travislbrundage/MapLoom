@@ -235,9 +235,10 @@
           olFeature.setId(result.name);
         }
         console.log('populateSearchLayer');
-        console.log(olFeature);
+        //console.log(result.location);
         olFeature.setGeometry(new ol.geom.Point(ol.proj.transform(result.location, 'EPSG:4326',
             mapService_.map.getView().getProjection())));
+        console.log(olFeature);
         searchlayer_.getSource().addFeature(olFeature);
       });
     };

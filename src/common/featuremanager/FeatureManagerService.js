@@ -1034,14 +1034,74 @@
           });
         }
 
+        var coordinatesWithinRange = function(coords1, coords2, range) {
+          if (coords1.length != coords2.length) {
+            return false;
+          }
+          for (var i = 0; i < coords1.length; i++) {
+            if (Math.abs(coords1[i] - coords2[i]) > range) {
+              return false;
+            }
+          }
+          return true;
+        };
+
         //Get the feature info for each layer that supports it
         goog.array.forEach(layers, function(layer, index) {
           var source = layer.getSource();
           if (layer.get('metadata').searchLayer || layer.get('metadata').searchResults) {
             // This is where we need to filter features only at coordinate
             console.log('evt coordinate: ' + evt.coordinate);
+            console.log('resolution: ' + view.getResolution());
             var layerInfo = {};
-            layerInfo.features = source.getFeatures();
+            layerInfo.features = [];
+            //var coords = [-9579068.56548051, 3799225.76430419];
+            // WORKAROUND:
+            // Use the resolution, evt.coordinate value,
+            // and compare to coordinates of each feature
+            // If the difference between the coordinates at each index
+            // is less than the resolution, it's a hit
+            goog.array.forEach(source.getFeatures(), function(feature) {
+              // The resolution comes from the radius of the circle for the search
+              if (coordinatesWithinRange(feature.getGeometry().getCoordinates(), evt.coordinate, (view.getResolution() * 8))) {
+                // Hit
+                layerInfo.features.push(feature);
+              }
+            });
+
+            /*
+
+            var arraysEqual = function(a, b) {
+              if (a === b) {
+                return true;
+              }
+              if (a == null || b == null) {
+                return false;
+              }
+              if (a.length != b.length) {
+                return false;
+              }
+
+              // If you don't care about the order of the elements inside
+              // the array, you should sort both arrays here.
+
+              for (var i = 0; i < a.length; ++i) {
+                if (a[i] !== b[i]) {
+                  return false;
+                }
+              }
+              return true;
+            };
+            //ol.proj.transform([-99.5771397, 30.6771945], 'EPSG:4326',
+            //mapService_.map.getView().getProjection());
+            goog.array.forEach(source.getFeatures(), function(feature) {
+              if (arraysEqual(feature.getGeometry().getCoordinates(), coords)) {
+                console.log('true!');
+                layerInfo.features.push(feature);
+              }
+            });*/
+            // why tf does this not work???
+            //layerInfo.features = source.getFeaturesAtCoordinate(coords); //source.getFeaturesAtCoordinate(evt.coordinate);
             console.log('search layerInfo');
             console.log(layerInfo);
 

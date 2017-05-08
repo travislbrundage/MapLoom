@@ -157,8 +157,7 @@
               if (!goog.isDefAndNotNull(searchResults)) {
                 searchResults = new ol.layer.Vector({
                   metadata: {
-                    title: 'Pinned Search', // $translate.instant('search_results'),
-                    searchLayer: true,
+                    title: $translate.instant('pinned_search'),
                     searchResults: true
                   },
                   source: new ol.source.Vector({
@@ -193,6 +192,24 @@
                   );
               console.log(olFeature);
               searchResults.getSource().addFeature(olFeature);
+            };
+
+            scope.unpinFeature = function() {
+              var searchResults;
+              mapService.map.getLayers().forEach(function(layer) {
+                if (layer.get('metadata').searchResults) {
+                  searchResults = layer;
+                }
+              });
+              // This should not be possible
+              if (!goog.isDefAndNotNull(searchResults)) {
+                return;
+              }
+              var olFeature =
+                  featureManagerService.getSelectedLayer().getSource().getFeatureById(
+                      featureManagerService.getSelectedItem().id
+                  );
+              searchResults.getSource().removeFeature(olFeature);
             };
           }
         };
