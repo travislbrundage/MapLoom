@@ -157,7 +157,8 @@
               if (!goog.isDefAndNotNull(searchResults)) {
                 searchResults = new ol.layer.Vector({
                   metadata: {
-                    title: $translate.instant('search_results'),
+                    title: 'Pinned Search', // $translate.instant('search_results'),
+                    searchLayer: true,
                     searchResults: true
                   },
                   source: new ol.source.Vector({
@@ -182,11 +183,16 @@
               }
               // add the clicked on feature to this layer, searchResults
               // mapService_.getSpatialFilterLayer().getSource().getFeatureById(this.getSelectedItem().id)
-              var olFeature = featureManagerService.getSelectedLayer().getFeatureById(
-                featureManagerService.getSelectedItem().id
-              );
+              // console.log(featureManagerService.getSelectedItem().id);
+              // console.log(featureManagerService.getSelectedLayer().getSource().getFeatureById('London, Montgomery County...'));
+              //console.log(featureManagerService.getSelectedLayer().getSource().getFeatures());
+              //console.log(featureManagerService.getSelectedLayer().getSource());
+              var olFeature =
+                  featureManagerService.getSelectedLayer().getSource().getFeatureById(
+                      featureManagerService.getSelectedItem().id
+                  );
+              console.log(olFeature);
               searchResults.getSource().addFeature(olFeature);
-              console.log('Pin feature called');
             };
           }
         };

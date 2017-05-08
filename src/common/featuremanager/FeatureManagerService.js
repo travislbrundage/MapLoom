@@ -982,19 +982,24 @@
         //that way when the requests are processed we can keep track of when
         //all features are returned
         goog.array.forEach(layers, function(layer, index) {
-          var source = layer.getSource();
+          //var source = layer.getSource();
           console.log(layer);
-          // Also increment validRequestCount if the layer is an internalLayer
-          if (goog.isDefAndNotNull(source.getGetFeatureInfoUrl)) {
+          // TODO: Fix this
+          if (layer.get('metadata').title != 'OpenStreetMap') {
             validRequestCount++;
-            //console.log('valid');
           }
+          // Also increment validRequestCount if the layer is an internalLayer
+          //if (goog.isDefAndNotNull(source.getGetFeatureInfoUrl)) {
+          //  validRequestCount++;
+          //console.log('valid');
+          //}
         });
 
         //This function is called each time a get feature info request returns (call is made below).
         //when the completedRequestCount == validRequestCount, we can display the popup
         var getFeatureInfoCompleted = function() {
           completedRequestCount++;
+          console.log('completed: ' + completedRequestCount + ', valid: ' + validRequestCount);
 
           if (completedRequestCount === validRequestCount) {
             if (infoPerLayer.length > 0) {
@@ -1032,6 +1037,22 @@
         //Get the feature info for each layer that supports it
         goog.array.forEach(layers, function(layer, index) {
           var source = layer.getSource();
+          if (layer.get('metadata').searchLayer || layer.get('metadata').searchResults) {
+            // This is where we need to filter features only at coordinate
+            console.log('evt coordinate: ' + evt.coordinate);
+            var layerInfo = {};
+            layerInfo.features = source.getFeatures();
+            console.log('search layerInfo');
+            console.log(layerInfo);
+
+            if (layerInfo.features && layerInfo.features.length > 0 && goog.isDefAndNotNull(layers[index])) {
+              layerInfo.layer = layers[index];
+              goog.array.insert(infoPerLayer, layerInfo);
+            }
+
+            getFeatureInfoCompleted();
+            return;
+          }
           if (!goog.isDefAndNotNull(source.getGetFeatureInfoUrl)) {
             return;
           }

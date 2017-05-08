@@ -1120,10 +1120,12 @@
         var config = layer.get('metadata').config;
 
         if (!goog.isDefAndNotNull(config)) {
+          // TODO: This happens for the pinned search items
           console.log('Not saving layer: ', layer.get('metadata').name,
               'because the layer does not have a configuration object.');
           return false;
         }
+        console.log(config);
         // Note: when a server is removed, its id diverges from the index. since in geonode's config object it is all
         // index based, updating it to be the index in case the id is no longer the index
         var serverIndex = serverService_.getServerIndex(config.source);

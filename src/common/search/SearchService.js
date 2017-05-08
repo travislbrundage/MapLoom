@@ -223,9 +223,19 @@
       searchlayer_.getSource().clear();
       mapService_.map.removeLayer(searchlayer_);
       mapService_.map.addLayer(searchlayer_);
-      forEachArrayish(results, function(result) {
+      forEachArrayish(results, function(result, index) {
         var olFeature = new ol.Feature();
         olFeature.properties = result;
+        if (result.name.length > 25) {
+          // id is set twice to be handled correctly later
+          olFeature.id = result.name.substring(0, 25) + '...';
+          olFeature.setId(result.name.substring(0, 25) + '...');
+        } else {
+          olFeature.id = result.name;
+          olFeature.setId(result.name);
+        }
+        console.log('populateSearchLayer');
+        console.log(olFeature);
         olFeature.setGeometry(new ol.geom.Point(ol.proj.transform(result.location, 'EPSG:4326',
             mapService_.map.getView().getProjection())));
         searchlayer_.getSource().addFeature(olFeature);
