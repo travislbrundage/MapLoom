@@ -113,10 +113,10 @@
         registryEnabled: registryEnabled(),
         registryUrl: trimUrl("{{ REGISTRYURL }}"),
         searchEnabled: searchEnabled(),
-        nominatimSearchEnabled: nominatimSearchEnabled(),
+        nominatimSearchEnabled: false // nominatimSearchEnabled(),
         unifiedLayerDialog: unifiedDialogEnabled(),
         previewLayerConf: {{ MAP_PREVIEW_LAYER|safe }},
-        geoquerySearchEnabled: geoquerySearchEnabled()
+        geoquerySearchEnabled: true // geoquerySearchEnabled()
     };
     goog.object.extend( config, {{ config|safe }});
     // clean up any of the sources URLs

@@ -9,12 +9,13 @@
   var service_ = null;
 
   module.provider('searchService', function() {
-    this.$get = function($rootScope, $http, $q, $translate, configService, mapService) {
+    this.$get = function($rootScope, $http, $q, $translate, configService, mapService, $sce) {
       httpService_ = $http;
       q_ = $q;
       configService_ = configService;
       mapService_ = mapService;
       service_ = this;
+      sce = $sce;
 
       searchlayer_ = new ol.layer.Vector({
         metadata: {
@@ -109,7 +110,7 @@
       var url;
 
       // Check which to handle
-      if (configService_.configuration.nominatimSearchEnabled === true) {
+      if (false /* configService_.configuration.nominatimSearchEnabled === true*/) {
         var nominatimUrl = configService_.configuration.searchUrl;
         if (nominatimUrl.substr(nominatimUrl.length - 1) === '/') {
           nominatimUrl = nominatimUrl.substr(0, nominatimUrl.length - 1);
@@ -144,27 +145,29 @@
         }, function(reject) {
           promise.reject(reject.status);
         });
-      } else if (configService_.configuration.geoquerySearchEnabled === true) {
+      } else if (true /*configService_.configuration.geoquerySearchEnabled === true*/) {
         var geoqueryUrl = configService_.configuration.searchUrl;
         if (geoqueryUrl.substr(geoqueryUrl.length - 1) === '/') {
           geoqueryUrl = geoqueryUrl.substr(0, geoqueryUrl.length - 1);
         }
+        // '//homedev.gvslabs.com/GeoQuery/wfs',
+        // https://homedev.gvslabs.com/GeoQuery/geClientQueryAction.do?query=London&useBBOX=false&cc=IZ&maxResultsPerQuery=5&sources=GNIS&output=json
+        var trustedUrl = 'https://homedev.gvslabs.com/GeoQuery' + '/geClientQueryAction.do';
+        //sce.trustAsResourceUrl(trustedUrl);
         httpService_({
-          method: 'GET',
-          url: geoqueryUrl + '/wfs',
+          method: 'JSONP',
+          url: trustedUrl,
           params: {
-            request: 'GetFeature',
-            service: 'WFS',
-            version: '1.1.0',
-            typename: 'all',
-            filter: '<PropertyIsEqualTo><PropertyName>query</PropertyName><Literal>' +
-                address + '</Literal></PropertyIsEqualTo>',
-            bbox: currentView.toString(),
-            outputFormat: 'json'
+            query: address,
+            useBBOX: false,
+            output: 'json',
+            callback: 'JSON_CALLBACK'
           }
         }).then(function(response) {
+          console.log('success callback');
+          console.log(service_);
           if (goog.isDefAndNotNull(response.data.features) && goog.isArray(response.data.features)) {
-            var results = [];
+            /*var results = [];
             forEachArrayish(response.data.features, function(result) {
               results.push({
                 location: [parseFloat(result.geometry.coordinates[0]), parseFloat(result.geometry.coordinates[1])],
@@ -175,12 +178,13 @@
                 featureDesignationName: result.properties.featureDesignationName,
                 featureDesignationCode: result.properties.featureDesignationCode
               });
-            });
-            promise.resolve(results);
+            });*/
+            promise.resolve(response);
           } else {
             promise.reject(response.status);
           }
         }, function(reject) {
+          console.log('error callback');
           promise.reject(reject.status);
         });
       } else {
