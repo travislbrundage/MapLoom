@@ -304,5 +304,46 @@ describe('MapService', function() {
       totalLayers = mapService.getLayers().length;
       expect(totalLayers).toBe(1);
     });
+
+    it('should not return internalLayers unless they are the search layer or pinned search layer', function() {
+      defer.reject();
+      rootScope.$apply();
+
+      // create a base layer to tweak the metadata
+      var minConfig = {
+        name: 'test1',
+        source: serverService.getServers()[0].id,
+        ptype: serverService.getServers()[0].config.ptype
+      };
+      mapService.addLayer(minConfig);
+      var index = mapService.getLayers(true, true).length - 1;
+      var baseLayer = mapService.getLayers(true, true)[index];
+      var metadata = baseLayer.get('metadata');
+
+      // create mock layers
+      var internalMetadata = metadata;
+      internalMetadata['internalLayer'] = true;
+      var internalLayer = baseLayer;
+      internalLayer.set('metadata', internalMetadata);
+
+      var searchMetadata = internalMetadata;
+      searchMetadata['searchLayer'] = true;
+      var searchLayer = baseLayer;
+      searchLayer.set('metadata', searchMetadata);
+
+      var pinnedMetadata = internalMetadata;
+      pinnedMetadata['searchResults'] = true;
+      var pinnedLayer = baseLayer;
+      pinnedLayer.set('metadata', pinnedMetadata);
+
+      // add the mock layers
+      mapService.map.addLayer(internalLayer);
+      mapService.map.addLayer(searchLayer);
+      mapService.map.addLayer(pinnedLayer);
+
+      var totalLayers = mapService.getLayers(true, true).length; //should equal 3
+      // Should see the searchLayer, pinnedLayer, and original undefined layer (not the internalLayer)
+      expect(totalLayers).toBe(3);
+    });
   });
 });
