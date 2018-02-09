@@ -725,7 +725,10 @@
                     name: server_name
                   }).then(function(server) {
                     layer.add = true;
-                    layer.name = layer.typename;
+
+                    // Strip out the workspace
+                    layer.name = (layer.typename.indexOf(':') > -1) ? layer.typename.slice(layer.typename.indexOf(':') + 1) : layer.typename;
+
                     LayersService.addLayer(layer, server.id, server);
                   });
                 }
