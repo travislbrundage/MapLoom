@@ -1005,7 +1005,8 @@
           }
 
         } else if (server.ptype === 'gxp_wmscsource') {
-          nameSplit = fullConfig.Name.split(':');
+          var name = fullConfig.name || fullConfig.Name;
+          nameSplit = name.split(':');
 
           // favor virtual service url when available
           var mostSpecificUrl = server.url;
@@ -1022,6 +1023,8 @@
             }
           }
 
+          var proj;
+
           if (goog.isArray(fullConfig.BoundingBox)) {
             bbox = {extent: fullConfig.BoundingBox[0]};
           } else if (goog.isArray(fullConfig.extent)) {
@@ -1034,6 +1037,17 @@
               extent: minimalConfig.bbox,
               crs: 'EPSG:900913'
             };
+          } else if (fullConfig.bbox_left) {
+            bbox = {
+              crs: server.CRS || fullConfig.srid,
+              extent: [
+                fullConfig.bbox_left,
+                fullConfig.bbox_bottom,
+                fullConfig.bbox_right,
+                fullConfig.bbox_top
+              ]
+            };
+            proj = server.CRS || fullConfig.srid;
           }
 
           var source_params = {
@@ -1043,6 +1057,9 @@
 
           if (server.version !== undefined) {
             source_params['VERSION'] = server.version;
+          } else {
+            source_params['VERSION'] = '1.1.1';
+            source_params['SRS'] = proj;
           }
 
           var tilewms_source = new ol.source.TileWMS({
@@ -1072,6 +1089,10 @@
             // manually override the projection
             var proj = this._projection !== undefined ? this._projection : projection;
 
+            if (proj.getCode() === 'EPSG:900913') {
+              proj = ol.proj.get('EPSG:3857');
+            }
+
             var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
 
             if (this._isRemote === true) {
@@ -1086,18 +1107,18 @@
               serverId: server.id,
               name: minimalConfig.name,
               url: goog.isDefAndNotNull(mostSpecificUrl) ? mostSpecificUrl : undefined,
-              title: fullConfig.Title,
-              abstract: fullConfig.Abstract,
+              title: fullConfig.Title || fullConfig.title,
+              abstract: fullConfig.Abstract || fullConfig.abstract,
               keywords: fullConfig.KeywordList,
               workspace: nameSplit.length > 1 ? nameSplit[0] : '',
               readOnly: false,
               editable: false,
               bbox: bbox,
-              projection: service_.getCRSCode(fullConfig.CRS),
+              projection: service_.getCRSCode(fullConfig.CRS) || server.CRS || fullConfig.srid,
               savedSchema: minimalConfig.schema,
               dimensions: fullConfig.Dimension
             },
-            projection: server.override_crs,
+            projection: server.override_crs || service_.getCRSCode(fullConfig.CRS) || server.CRS || fullConfig.srid,
             visible: minimalConfig.visibility,
             source: tilewms_source
           });
