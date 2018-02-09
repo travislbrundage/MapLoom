@@ -666,6 +666,28 @@
     };
 
     this.createLayerFull = function(minimalConfig, fullConfig, server, opt_layerOrder) {
+      // Helper functions for PKI route adjustment
+      var matchesPKIproxy = function(url) {
+        var PKIproxyUrl = window.location.protocol + '//' + window.location.host + '/pki/';
+        return url.indexOf(PKIproxyUrl) === 0;
+      };
+      var appendAccessToken = function(url) {
+        if (goog.isDefAndNotNull(configService_.configuration.access_token)) {
+          // no query params yet
+          if (url.indexOf('?') === -1) {
+            url = url + '?' + configService_.configuration.access_token;
+          } else {
+            // TODO: if it already has an access_token, do we want to overwrite it?
+            if (url.indexOf('access_token') !== -1) {
+              // overwrite access_token or leave it the same?
+            } else {
+              url = url + '&' + configService_.configuration.access_token;
+            }
+          }
+        }
+
+        return url;
+      };
       // download missing projection projection if we don't have it
       if (goog.isDefAndNotNull(fullConfig)) {
         var projcode = service_.getCRSCode(fullConfig.CRS);
@@ -875,6 +897,9 @@
         } else if (server.ptype === 'gxp_arcrestsource' && server.restConfig.capabilities.indexOf('Tilemap') < 0) {
           // This arc service does not support tiled maps, so this will
           // use the arc image service instead...
+          if (matchesPKIproxy(server.url)) {
+            server.url = appendAccessToken(server.url);
+          }
           serviceSource = new ol.source.TileArcGISRest({
             url: server.url
           });
@@ -937,6 +962,9 @@
             html: 'Tiles &copy; <a href="' + server.url + '">ArcGIS</a>'
           });
           var serviceUrl = server.url + 'tile/{z}/{y}/{x}';
+          if (matchesPKIproxy(serviceUrl)) {
+            serviceUrl = appendAccessToken(serviceUrl);
+          }
           var serviceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
@@ -1060,6 +1088,10 @@
           } else {
             source_params['VERSION'] = '1.1.1';
             source_params['SRS'] = proj;
+          }
+
+          if (matchesPKIproxy(mostSpecificUrlWms)) {
+            mostSpecificUrlWms = appendAccessToken(mostSpecificUrlWms);
           }
 
           var tilewms_source = new ol.source.TileWMS({
