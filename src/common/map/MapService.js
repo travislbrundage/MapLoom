@@ -675,13 +675,10 @@
         if (goog.isDefAndNotNull(configService_.configuration.access_token)) {
           // no query params yet
           if (url.indexOf('?') === -1) {
-            url = url + '?' + configService_.configuration.access_token;
+            url = url + '?access_token=' + configService_.configuration.access_token;
           } else {
-            // TODO: if it already has an access_token, do we want to overwrite it?
-            if (url.indexOf('access_token') !== -1) {
-              // overwrite access_token or leave it the same?
-            } else {
-              url = url + '&' + configService_.configuration.access_token;
+            if (url.indexOf('access_token') === -1) {
+              url = url + '&access_token=' + configService_.configuration.access_token;
             }
           }
         }
