@@ -554,7 +554,12 @@ var SERVER_SERVICE_USE_PROXY = true;
      * Read the configuration for a server.
      */
     this.populateLayersConfigRest = function(server, force, deferredResponse) {
-      var meta_url = server.url + '?f=pjson';
+      var meta_url = server.url;
+      if (server.url.indexOf('?') === -1) {
+        meta_url = server.url + '?f=pjson';
+      } else {
+        meta_url = server.url.replace(/(.)\/$/, '$1') + '&f=pjson';
+      }
       var url = configService_.configuration.proxy + encodeURIComponent(meta_url);
 
       // convert the ESRI spatial reference to an EPSG code.
