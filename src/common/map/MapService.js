@@ -1124,7 +1124,8 @@
 
             var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
 
-            if (this._isRemote === true) {
+            // if it is a remote service and not going through pki proxy already
+            if (this._isRemote === true && !matchesPKIproxy(url)) {
               url = configService_.configuration.proxy + encodeURIComponent(url);
             }
 
@@ -1265,7 +1266,12 @@
                 var z = coordinate[0];
                 var x = coordinate[1];
                 var y = (1 << z) - coordinate[2] - 1;
-                return '/proxy/?url=' + url + minimalConfig.name + '/' + z + '/' + x + '/' + y + '.png';
+                var proxy_prepend = '/proxy/?url=';
+                // don't prepend a proxy if we're already going through pki proxy
+                if (matchesPKIproxy(url)) {
+                  proxy_prepend = '';
+                }
+                return proxy_prepend + url + minimalConfig.name + '/' + z + '/' + x + '/' + y + '.png';
               }
             })
           });
