@@ -958,6 +958,11 @@
           var attribution = new ol.Attribution({
             html: 'Tiles &copy; <a href="' + server.url + '">ArcGIS</a>'
           });
+
+          if (server.url.lastIndexOf('/') !== server.url.length - 1) {
+            server.url += '/';
+          }
+
           var serviceUrl = server.url + 'tile/{z}/{y}/{x}';
           if (matchesPKIproxy(serviceUrl)) {
             serviceUrl = appendAccessToken(serviceUrl);
