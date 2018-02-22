@@ -560,7 +560,13 @@ var SERVER_SERVICE_USE_PROXY = true;
       } else {
         meta_url = server.url.replace(/(.)\/$/, '$1') + '&f=pjson';
       }
-      var url = configService_.configuration.proxy + encodeURIComponent(meta_url);
+      var url = null;
+      var PKIproxyUrl = window.location.protocol + '//' + window.location.host + '/pki/';
+      if (server.url.indexOf(PKIproxyUrl) === 0) {
+        url = meta_url;
+      } else {
+        url = configService_.configuration.proxy + encodeURIComponent(meta_url);
+      }
 
       // convert the ESRI spatial reference to an EPSG code.
       var sr_to_crs = function(sr) {
@@ -1070,7 +1076,10 @@ var SERVER_SERVICE_USE_PROXY = true;
 
         // if the service is remote, setup a proxy for the get caps URL
         if (server.remote === true) {
-          url_getcaps = configService_.configuration.proxy + encodeURIComponent(url_getcaps);
+          var PKIproxyUrl = window.location.protocol + '//' + window.location.host + '/pki/';
+          if (url_getcaps.indexOf(PKIproxyUrl) === -1) {
+            url_getcaps = configService_.configuration.proxy + encodeURIComponent(url_getcaps);
+          }
         }
 
         server.populatingLayersConfig = true;
