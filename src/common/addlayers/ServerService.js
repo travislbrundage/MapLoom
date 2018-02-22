@@ -705,7 +705,7 @@ var SERVER_SERVICE_USE_PROXY = true;
     var cleanTileUrl = function(tileUrl) {
       // this is definitely an absolute URL if it starts with http
       if (tileUrl.substring(0, 4).toLowerCase() == 'http') {
-        return trimUrl.substring(trimUrl.indexOf('//'));
+        return tileUrl.substring(tileUrl.indexOf('//'));
       }
 
       // double-slash is short hand for schemaless http,
