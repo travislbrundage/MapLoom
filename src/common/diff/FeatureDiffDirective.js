@@ -224,7 +224,7 @@
               var branch = featureDiffService.layer.get('metadata').branchName;
               var layerName = featureDiffService.layer.get('metadata').uniqueID;
               var options = new GeoGigRevertFeatureOptions();
-              options.authorName = configService.configuration.userprofilename;
+              options.authorName = configService.configuration.username;
               options.authorEmail = configService.configuration.userprofileemail;
               options.path = featureDiffService.feature.id;
               if (featureDiffService.change === 'MERGED') {
