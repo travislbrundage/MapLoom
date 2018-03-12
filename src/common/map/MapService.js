@@ -666,6 +666,48 @@
     };
 
     this.createLayerFull = function(minimalConfig, fullConfig, server, opt_layerOrder) {
+      // proxy a url if the source parameters indicate to do so
+      var useProxyUrlParam = function(use_proxy, url) {
+        if (goog.isDefAndNotNull(use_proxy) && use_proxy === true) {
+          url = decodeURIComponent(url);
+          if (url.indexOf(configService_.configuration.proxy) < 0) {
+            url = configService_.configuration.proxy + encodeURIComponent(url);
+          } else {
+            url = encodeURIComponent(url);
+          }
+        }
+        return url;
+      };
+      // fixes the projection and utilizes the proxy url if appropriate
+      var fixRequestUrl = function(use_proxy, url) {
+        // WARNING! this is a monkey-patch for the ancient verison
+        //  of openlayers which MapLoom required as of 18 Jan 2018
+      };
+
+          serviceSource.getRequestUrl_ = function(tileCoord, tileSize, tileExtent, pixelRatio, projection, params) {
+            // patch the web mercator projection.
+            var proj = this._projection !== undefined ? this._projection : projection;
+
+            if (proj.getCode() === 'EPSG:900913') {
+              proj = ol.proj.get('EPSG:3857');
+            }
+
+            var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
+            // TODO: swap this with proxy param function call instead
+            /*if (this._isRemote === true) {
+              // check for double proxy
+              url = decodeURIComponent(url);
+              if (url.indexOf(configService_.configuration.proxy) < 0) {
+                console.log('remote service use proxy section');
+                url = configService_.configuration.proxy + encodeURIComponent(url);
+              } else {
+                console.log('remote service detected double proxy');
+                url = encodeURIComponent(url);
+              }
+            }*/
+
+            return useProxyUrlParam(server, url);
+          };
       // download missing projection projection if we don't have it
       if (goog.isDefAndNotNull(fullConfig)) {
         var projcode = service_.getCRSCode(fullConfig.CRS);
@@ -726,7 +768,7 @@
       } else {
         if (fullConfig.type && fullConfig.type == 'mapproxy_tms') {
           var src = new ol.source.XYZ({
-            url: fullConfig.detail_url
+            url: useProxyUrlParam(server, fullConfig.detail_url)
           });
 
           // do not try to offer a GetFeatureInfo call if there
@@ -791,7 +833,7 @@
           layer = new ol.layer.Tile({
             metadata: {
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? mostSpecificUrl : undefined,
+              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(server, mostSpecificUrl) : undefined,
               title: fullConfig.title,
               extent: fullConfig['extent'],
               abstract: fullConfig.abstract,
@@ -818,6 +860,11 @@
             url: settings.OsmLocalUrl
           };
           var osmSource = (settings.OsmLocalUrl !== 'default') ? osmLocal : '';
+          var osmService = new ol.source.OSM(osmSource);
+          // The source will only have the one url in the first index
+          var osmUrl = useProxyUrlParam(server, osmService.getUrls()[0]);
+          // OSM source doesn't want the url encoded
+          osmService.setUrl(decodeURIComponent(osmUrl));
           layer = new ol.layer.Tile({
             metadata: {
               serverId: server.id,
@@ -825,7 +872,7 @@
               title: fullConfig.Title
             },
             visible: minimalConfig.visibility,
-            source: new ol.source.OSM(osmSource)
+            source: osmService
           });
         } else if (server.ptype === 'gxp_bingsource') {
 
@@ -845,6 +892,7 @@
               title: fullConfig.Title
             },
             visible: minimalConfig.visibility,
+            // TODO: Do we want to override the url in fullConfig.sourceParams?
             source: new ol.source.BingMaps(sourceParams)
           });
         } else if (server.ptype === 'gxp_googlesource') {
@@ -854,7 +902,7 @@
 
           var parms = {
             //url: 'http://api.tiles.mapbox.com/v3/mapbox.' + fullConfig.sourceParams.layer + '.json?access_token=pk.eyJ1IjoiYmVja2VyciIsImEiOiJjaWtzcHVyeTYwMDA3dWdsenB5aHUxMzl1In0.1FVjOTdhoXGXtnfApX8wVQ',
-            url: '//api.tiles.mapbox.com/v4/mapbox.' + fullConfig.sourceParams.layer + '.json?access_token=pk.eyJ1IjoiYmVja2VyciIsImEiOiJjaWtzcHVyeTYwMDA3dWdsenB5aHUxMzl1In0.1FVjOTdhoXGXtnfApX8wVQ',
+            url: useProxyUrlParam(server, '//api.tiles.mapbox.com/v4/mapbox.' + fullConfig.sourceParams.layer + '.json?access_token=pk.eyJ1IjoiYmVja2VyciIsImEiOiJjaWtzcHVyeTYwMDA3dWdsenB5aHUxMzl1In0.1FVjOTdhoXGXtnfApX8wVQ'),
             crossOrigin: true
           };
           var mbsource = new ol.source.TileJSON(parms);
@@ -873,20 +921,12 @@
             console.log('====[ Error: could not create base layer.');
           }
         } else if (server.ptype === 'gxp_arcrestsource' && server.restConfig.capabilities.indexOf('Tilemap') < 0) {
+          console.log('arcrest tilemap');
           // This arc service does not support tiled maps, so this will
           // use the arc image service instead...
           serviceSource = new ol.source.TileArcGISRest({
             url: server.url
           });
-
-          // patch the web mercator projection.
-          serviceSource.tileUrlFunction = function(tileCoord, pixelRatio, projection) {
-            var rest_proj = projection;
-            if (rest_proj.getCode() === 'EPSG:900913') {
-              rest_proj = ol.proj.get('EPSG:3857');
-            }
-            return this.fixedTileUrlFunction(tileCoord, pixelRatio, rest_proj);
-          };
 
           if (fullConfig.bbox_left) {
             bbox = {
@@ -902,6 +942,41 @@
             bbox = fullConfig.extent;
           }
 
+          if (server.remote === true) {
+            serviceSource._isRemote = true;
+          }
+
+          // WARNING! this is a monkey-patch for the ancient verison
+          //  of openlayers which MapLoom required as of 18 Jan 2018
+
+          // Store the original function
+          serviceSource._getRequestUrl_ = serviceSource.getRequestUrl_;
+
+          serviceSource.getRequestUrl_ = function(tileCoord, tileSize, tileExtent, pixelRatio, projection, params) {
+            // patch the web mercator projection.
+            var proj = this._projection !== undefined ? this._projection : projection;
+
+            if (proj.getCode() === 'EPSG:900913') {
+              proj = ol.proj.get('EPSG:3857');
+            }
+
+            var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
+            // TODO: swap this with proxy param function call instead
+            /*if (this._isRemote === true) {
+              // check for double proxy
+              url = decodeURIComponent(url);
+              if (url.indexOf(configService_.configuration.proxy) < 0) {
+                console.log('remote service use proxy section');
+                url = configService_.configuration.proxy + encodeURIComponent(url);
+              } else {
+                console.log('remote service detected double proxy');
+                url = encodeURIComponent(url);
+              }
+            }*/
+
+            return useProxyUrlParam(server, url);
+          };
+
           layer = new ol.layer.Tile({
             metadata: {
               serverId: server.id,
@@ -913,6 +988,7 @@
             source: serviceSource
           });
         } else if (server.ptype === 'gxp_arcrestsource') {
+          console.log('arcrest only');
           if (fullConfig.bbox_left) {
             bbox = {
               crs: server.CRS,
@@ -933,15 +1009,16 @@
             bbox: bbox,
             title: fullConfig.Title
           };
+          // TODO: Does this portion also need to be proxied? Trying it now
           var attribution = new ol.Attribution({
-            html: 'Tiles &copy; <a href="' + server.url + '">ArcGIS</a>'
+            html: 'Tiles &copy; <a href="' + useProxyUrlParam(server, server.url) + '">ArcGIS</a>'
           });
 
           if (server.url.lastIndexOf('/') !== server.url.length - 1) {
             server.url += '/';
           }
 
-          var serviceUrl = server.url + 'tile/{z}/{y}/{x}';
+          var serviceUrl = useProxyUrlParam(server, server.url) + 'tile/{z}/{y}/{x}';
           var serviceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
@@ -978,6 +1055,7 @@
           var jsontile_source = server.layersConfig[0].TileJSONSource;
 
           if (goog.isDefAndNotNull(jsontile_source)) {
+            // TODO: Do we want to override the url in fullConfig.sourceParams?
             layer = new ol.layer.Tile({
               metadata: {
                 serverId: server.id,
@@ -993,6 +1071,7 @@
             console.log('====[ Error: could not create base layer.');
           }
         } else if (server.ptype === 'gxp_mapquestsource') {
+          // TODO: Do we want to override the url in fullConfig.sourceParams?
           var source = new ol.source.MapQuest(fullConfig.sourceParams);
 
           if (goog.isDefAndNotNull(source)) {
@@ -1067,6 +1146,8 @@
             source_params['SRS'] = proj;
           }
 
+          // It seems we cannot proxy the url here
+          // may be related to proxy section below
           var tilewms_source = new ol.source.TileWMS({
             url: mostSpecificUrlWms,
             params: source_params
@@ -1101,7 +1182,15 @@
             var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
 
             if (this._isRemote === true) {
-              url = configService_.configuration.proxy + encodeURIComponent(url);
+              // check for double proxy
+              url = decodeURIComponent(url);
+              if (url.indexOf(configService_.configuration.proxy) < 0) {
+                console.log('remote service use proxy section');
+                url = configService_.configuration.proxy + encodeURIComponent(url);
+              } else {
+                console.log('remote service detected double proxy');
+                url = encodeURIComponent(url);
+              }
             }
 
             return url;
@@ -1111,7 +1200,7 @@
             metadata: {
               serverId: server.id,
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? mostSpecificUrl : undefined,
+              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(server, mostSpecificUrl) : undefined,
               title: fullConfig.Title || fullConfig.title,
               abstract: fullConfig.Abstract || fullConfig.abstract,
               keywords: fullConfig.KeywordList,
@@ -1224,7 +1313,7 @@
             metadata: {
               serverId: server.id,
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(url) ? url : undefined,
+              url: goog.isDefAndNotNull(url) ? useProxyUrlParam(server, url) : undefined,
               title: fullConfig.Title,
               abstract: fullConfig.Abstract,
               keywords: fullConfig.KeywordList,

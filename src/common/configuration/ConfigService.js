@@ -127,6 +127,17 @@
         goog.object.extend(this.configuration, $window.config, {});
       }
 
+      // proxy basemap if config value
+      // this is specific to the OSM basemap
+      // TODO: generalize this solution
+      for (var source in this.configuration.sources) {
+        if (Object.keys(this.configuration.sources[source]).length === 1) {
+          if (this.configuration.sources[source]['ptype'] == 'gxp_osmsource') {
+            this.configuration.sources[source]['use_proxy'] = this.configuration.proxyBaseMap;
+          }
+        }
+      }
+
       this.username = this.configuration.username;
       this.currentLanguage = this.configuration.currentLanguage;
       this.user_profile_name = this.configuration.userprofilename;
