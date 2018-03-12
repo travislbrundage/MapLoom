@@ -678,36 +678,29 @@
         }
         return url;
       };
-      // fixes the projection and utilizes the proxy url if appropriate
-      var fixRequestUrl = function(use_proxy, url) {
+      // fixes the projection and utilizes the proxy url if appropriate for the service
+      var fixRequestUrl = function(service, use_proxy) {
         // WARNING! this is a monkey-patch for the ancient verison
         //  of openlayers which MapLoom required as of 18 Jan 2018
+
+        // Store the original function
+        service._getRequestUrl_ = service.getRequestUrl_;
+
+        service.getRequestUrl_ = function(tileCoord, tileSize, tileExtent, pixelRatio, projection, params) {
+          // patch the web mercator projection.
+          var proj = this._projection !== undefined ? this._projection : projection;
+
+          if (proj.getCode() === 'EPSG:900913') {
+            proj = ol.proj.get('EPSG:3857');
+          }
+
+          var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
+          return useProxyUrlParam(use_proxy, url);
+        };
+        
+        return service;
       };
 
-          serviceSource.getRequestUrl_ = function(tileCoord, tileSize, tileExtent, pixelRatio, projection, params) {
-            // patch the web mercator projection.
-            var proj = this._projection !== undefined ? this._projection : projection;
-
-            if (proj.getCode() === 'EPSG:900913') {
-              proj = ol.proj.get('EPSG:3857');
-            }
-
-            var url = this._getRequestUrl_(tileCoord, tileSize, tileExtent, pixelRatio, proj, params);
-            // TODO: swap this with proxy param function call instead
-            /*if (this._isRemote === true) {
-              // check for double proxy
-              url = decodeURIComponent(url);
-              if (url.indexOf(configService_.configuration.proxy) < 0) {
-                console.log('remote service use proxy section');
-                url = configService_.configuration.proxy + encodeURIComponent(url);
-              } else {
-                console.log('remote service detected double proxy');
-                url = encodeURIComponent(url);
-              }
-            }*/
-
-            return useProxyUrlParam(server, url);
-          };
       // download missing projection projection if we don't have it
       if (goog.isDefAndNotNull(fullConfig)) {
         var projcode = service_.getCRSCode(fullConfig.CRS);
