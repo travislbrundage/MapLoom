@@ -700,6 +700,9 @@
 
         return service;
       };
+      var getUseProxyParam = function(server) {
+        return goog.isDefAndNotNull(server.use_proxy) ? server.use_proxy : false;
+      };
       // download missing projection projection if we don't have it
       if (goog.isDefAndNotNull(fullConfig)) {
         var projcode = service_.getCRSCode(fullConfig.CRS);
@@ -760,7 +763,7 @@
       } else {
         if (fullConfig.type && fullConfig.type == 'mapproxy_tms') {
           var src = new ol.source.XYZ({
-            url: useProxyUrlParam(server.use_proxy, fullConfig.detail_url)
+            url: useProxyUrlParam(getUseProxyParam(server), fullConfig.detail_url)
           });
 
           // do not try to offer a GetFeatureInfo call if there
@@ -825,7 +828,7 @@
           layer = new ol.layer.Tile({
             metadata: {
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(server.use_proxy, mostSpecificUrl) : undefined,
+              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(getUseProxyParam(server), mostSpecificUrl) : undefined,
               title: fullConfig.title,
               extent: fullConfig['extent'],
               abstract: fullConfig.abstract,
@@ -854,7 +857,7 @@
           var osmSource = (settings.OsmLocalUrl !== 'default') ? osmLocal : '';
           var osmService = new ol.source.OSM(osmSource);
           // The source will only have the one url in the first index
-          var osmUrl = useProxyUrlParam(server.use_proxy, osmService.getUrls()[0]);
+          var osmUrl = useProxyUrlParam(getUseProxyParam(server), osmService.getUrls()[0]);
           // OSM source doesn' want the url encoded
           osmService.setUrl(decodeURIComponent(osmUrl));
           layer = new ol.layer.Tile({
@@ -894,7 +897,7 @@
 
           var parms = {
             //url: 'http://api.tiles.mapbox.com/v3/mapbox.' + fullConfig.sourceParams.layer + '.json?access_token=pk.eyJ1IjoiYmVja2VyciIsImEiOiJjaWtzcHVyeTYwMDA3dWdsenB5aHUxMzl1In0.1FVjOTdhoXGXtnfApX8wVQ',
-            url: useProxyUrlParam(server.use_proxy, '//api.tiles.mapbox.com/v4/mapbox.' + fullConfig.sourceParams.layer + '.json?access_token=pk.eyJ1IjoiYmVja2VyciIsImEiOiJjaWtzcHVyeTYwMDA3dWdsenB5aHUxMzl1In0.1FVjOTdhoXGXtnfApX8wVQ'),
+            url: useProxyUrlParam(getUseProxyParam(server), '//api.tiles.mapbox.com/v4/mapbox.' + fullConfig.sourceParams.layer + '.json?access_token=pk.eyJ1IjoiYmVja2VyciIsImEiOiJjaWtzcHVyeTYwMDA3dWdsenB5aHUxMzl1In0.1FVjOTdhoXGXtnfApX8wVQ'),
             crossOrigin: true
           };
           var mbsource = new ol.source.TileJSON(parms);
@@ -977,14 +980,14 @@
           };
           // TODO: Should this portion be proxied?
           var attribution = new ol.Attribution({
-            html: 'Tiles &copy; <a href="' + useProxyUrlParam(server.use_proxy, server.url) + '">ArcGIS</a>'
+            html: 'Tiles &copy; <a href="' + useProxyUrlParam(getUseProxyParam(server), server.url) + '">ArcGIS</a>'
           });
 
           if (server.url.lastIndexOf('/') !== server.url.length - 1) {
             server.url += '/';
           }
 
-          var serviceUrl = useProxyUrlParam(server.use_proxy, server.url) + 'tile/{z}/{y}/{x}';
+          var serviceUrl = useProxyUrlParam(getUseProxyParam(server), server.url) + 'tile/{z}/{y}/{x}';
           var serviceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
@@ -1135,7 +1138,7 @@
             metadata: {
               serverId: server.id,
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(server.use_proxy, mostSpecificUrl) : undefined,
+              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(getUseProxyParam(server), mostSpecificUrl) : undefined,
               title: fullConfig.Title || fullConfig.title,
               abstract: fullConfig.Abstract || fullConfig.abstract,
               keywords: fullConfig.KeywordList,
@@ -1248,7 +1251,7 @@
             metadata: {
               serverId: server.id,
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(url) ? useProxyUrlParam(server.use_proxy, url) : undefined,
+              url: goog.isDefAndNotNull(url) ? useProxyUrlParam(getUseProxyParam(server), url) : undefined,
               title: fullConfig.Title,
               abstract: fullConfig.Abstract,
               keywords: fullConfig.KeywordList,
