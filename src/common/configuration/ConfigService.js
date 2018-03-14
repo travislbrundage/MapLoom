@@ -133,7 +133,7 @@
       for (var source in this.configuration.sources) {
         // the constructed default baselayer is just an OSM source
         // with only one kvp - ptype: gxp_osmsource
-        if (Object.keys(this.configuration.sources[source].length === 1)) {
+        if (Object.keys(this.configuration.sources[source]).length === 1) {
           if (this.configuration.sources[source]['ptype'] == 'gxp_osmsource') {
             this.configuration.sources[source]['use_proxy'] = this.configuration.proxyBaseMap;
           }
