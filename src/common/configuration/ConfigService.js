@@ -126,7 +126,7 @@
       if (goog.isDefAndNotNull($window.config)) {
         goog.object.extend(this.configuration, $window.config, {});
       }
-      
+
       // proxy basemap if config value proxyBaseMap is true
       // this is specific to the OSM basemap because it is constructed here
       // and may not be overriden by a passed in MapLayer from GeoNode
