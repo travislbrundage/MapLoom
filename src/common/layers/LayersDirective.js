@@ -73,6 +73,17 @@
               var loadingStyle = layer.get('metadata').loadingStyle;
               return goog.isDefAndNotNull(loadingStyle) && loadingStyle === true;
             };
+            scope.hasStylePermissions = function(layer) {
+              var exchangeMetadata = layer.get('exchangeMetadata');
+              var has_perms = false;
+              if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.permissions)) {
+                var permissions = exchangeMetadata.permissions;
+                if (goog.isDefAndNotNull(permissions)) {
+                  has_perms = permissions.edit_style;
+                }
+              }
+              return has_perms;
+            };
 
             scope.toggleStyleControl = function(layer) {
               var showStylePanel = layer.get('metadata').showStylePanel;
@@ -84,20 +95,18 @@
             };
 
             scope.saveLayerStyle = function(layer) {
-              if (configService.configuration.stylingEnabled) {
-                if (goog.isDefAndNotNull(layer.get('metadata').defaultStyle)) {
-                  var loading = layer.get('metadata').loadingStyle || true;
-                  if (goog.isDefAndNotNull(loading) && loading) {
-                    layer.get('metadata').loadingStyle = true;
-                    mapService.updateStyle(layer).then(function() {
-                      layer.get('metadata').loadingStyle = false;
-                    }, function() {
-                      layer.get('metadata').loadingStyle = false;
-                      dialogService.error($translate.instant('save_layer_style'),
-                          $translate.instant('style_layer_failed',
-                              { 'style_name': layer.get('metadata').defaultStyle.name}));
-                    });
-                  }
+              if (goog.isDefAndNotNull(layer.get('metadata').defaultStyle)) {
+                var loading = layer.get('metadata').loadingStyle || true;
+                if (goog.isDefAndNotNull(loading) && loading) {
+                  layer.get('metadata').loadingStyle = true;
+                  mapService.updateStyle(layer).then(function() {
+                    layer.get('metadata').loadingStyle = false;
+                  }, function() {
+                    layer.get('metadata').loadingStyle = false;
+                    dialogService.error($translate.instant('save_layer_style'),
+                        $translate.instant('style_layer_failed',
+                            { 'style_name': layer.get('metadata').defaultStyle.name}));
+                  });
                 }
               }
             };
