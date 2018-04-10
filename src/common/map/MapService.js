@@ -1005,7 +1005,7 @@
           }
 
         } else if (server.ptype === 'gxp_wmscsource') {
-          nameSplit = fullConfig.Name.split(':');
+          nameSplit = (fullConfig.Name || fullConfig.name).split(':');
 
           // favor virtual service url when available
           var mostSpecificUrl = server.url;
@@ -1037,7 +1037,7 @@
           }
 
           var source_params = {
-            'LAYERS': minimalConfig.name,
+            'LAYERS': fullConfig.typeName || minimalConfig.name,
             'tiled': 'true'
           };
 

@@ -725,7 +725,13 @@
                     name: server_name
                   }).then(function(server) {
                     layer.add = true;
-                    layer.name = layer.typename;
+                    // pick the "best of", different version of the code will
+                    //  or will not prefix the data source in the typename vs in the name.
+                    if (layer_def.name.split(':').length < layer_def.typename.split(':').length) {
+                      layer.name = layer_def.name;
+                    } else {
+                      layer.name = layer_def.typename;
+                    }
                     LayersService.addLayer(layer, server.id, server);
                   });
                 }
