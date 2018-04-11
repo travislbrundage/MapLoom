@@ -1259,6 +1259,9 @@
         var mapLayers = this.map.getLayerGroup().getLayers().getArray();
         meta.layerOrder = goog.isDefAndNotNull(opt_layerOrder) ? opt_layerOrder : mapLayers.length;
 
+        // add the workspace
+        meta.workspace = minimalConfig.workspace;
+
         // the first registry layer gets added beneath the base map.
         // this prevents that.
         if (meta.registry && meta.layerOrder === 1) {
