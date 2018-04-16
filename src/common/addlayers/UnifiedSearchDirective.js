@@ -731,17 +731,25 @@
                     use_proxy: layer.use_proxy
                   }).then(function(server) {
                     layer.add = true;
-
-                    // Strip out the workspace
-                    layer.name = (layer.typename.indexOf(':') > -1) ? layer.typename.slice(layer.typename.indexOf(':') + 1) : layer.typename;
-
+                    // pick the "best of", different version of the code will
+                    //  or will not prefix the data source in the typename vs in the name.
+                    if (layer_def.name.split(':').length < layer_def.typename.split(':').length) {
+                      layer.name = layer_def.name;
+                    } else {
+                      layer.name = layer_def.typename;
+                    }
                     LayersService.addLayer(layer, server.id, server);
                   });
                 } else {
                   layer.add = true;
 
-                  // Strip out the workspace
-                  layer.name = (layer.typename.indexOf(':') > -1) ? layer.typename.slice(layer.typename.indexOf(':') + 1) : layer.typename;
+                  // pick the "best of", different version of the code will
+                  //  or will not prefix the data source in the typename vs in the name.
+                  if (layer_def.name.split(':').length < layer_def.typename.split(':').length) {
+                    layer.name = layer_def.name;
+                  } else {
+                    layer.name = layer_def.typename;
+                  }
 
                   LayersService.addLayer(layer, server_to_use.id, server_to_use);
                 }

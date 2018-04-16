@@ -1112,8 +1112,7 @@
           }
 
         } else if (server.ptype === 'gxp_wmscsource') {
-          var name = fullConfig.name || fullConfig.Name;
-          nameSplit = name.split(':');
+          nameSplit = (fullConfig.Name || fullConfig.name).split(':');
 
           // favor virtual service url when available
           var mostSpecificUrl = server.url;
@@ -1158,7 +1157,7 @@
           }
 
           var source_params = {
-            'LAYERS': minimalConfig.name,
+            'LAYERS': fullConfig.typeName || minimalConfig.name,
             'tiled': 'true'
           };
 
@@ -1365,6 +1364,9 @@
 
         var mapLayers = this.map.getLayerGroup().getLayers().getArray();
         meta.layerOrder = goog.isDefAndNotNull(opt_layerOrder) ? opt_layerOrder : mapLayers.length;
+
+        // add the workspace
+        meta.workspace = minimalConfig.workspace;
 
         // the first registry layer gets added beneath the base map.
         // this prevents that.
