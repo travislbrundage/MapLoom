@@ -579,6 +579,7 @@ var SERVER_SERVICE_USE_PROXY = true;
             var name = layer_conf.name.replace(/\./g, '').replace(/ /g, '-');
             layers_config.push(Object.assign(xhr.data.layers[i], {
               name: server.name + '_' + name.toLowerCase() + ':' + layer_conf.id,
+              Title: layer_conf.name,
               srs: sr_to_crs(xhr.data.spatialReference),
               extent: {
                 crs: sr_to_crs(extent.spatialReference),
