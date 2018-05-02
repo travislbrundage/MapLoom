@@ -77,6 +77,15 @@
               var exchangeMetadata = layer.get('exchangeMetadata');
               var has_perms = false;
               if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.permissions)) {
+                // check for any raster attributes.
+                var attrs = exchangeMetadata.attributes;
+                for (var i = 0, ii = attrs.length; i < ii; i++) {
+                  // exit early if a raster attribute is found.
+                  if (attrs[i].attribute_type === 'raster') {
+                    return false;
+                  }
+                }
+
                 var permissions = exchangeMetadata.permissions;
                 if (goog.isDefAndNotNull(permissions)) {
                   has_perms = permissions.edit_style;
