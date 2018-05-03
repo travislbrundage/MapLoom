@@ -187,6 +187,16 @@
               $rootScope.$broadcast('getLayerAttributeVisibility', layer);
             };
 
+            scope.canZoom = function(layer) {
+              // ensure the projection is "zoomable".
+              var metadata = layer.get('metadata');
+              if (metadata.bbox) {
+                var layer_crs = metadata.bbox.crs ? metadata.bbox.crs : metadata.bbox.extent.crs;
+                return (ol.proj.get(layer_crs) !== undefined);
+              }
+              return false;
+            };
+
             scope.updateStyleChoices = function(styleChoices) {
               var overrides = {
                 fontFamily: ['serif', 'sans-serif']
