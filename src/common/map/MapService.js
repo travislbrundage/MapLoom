@@ -873,10 +873,15 @@
             console.log('====[ Error: could not create base layer.');
           }
         } else if (server.ptype === 'gxp_arcrestsource' && server.restConfig.capabilities.indexOf('Tilemap') < 0) {
+          // ensure the trailing slash is set.
+          var rest_url = server.url;
+          if (rest_url.substring(rest_url.length - 1) !== '/') {
+            rest_url += '/';
+          }
           // This arc service does not support tiled maps, so this will
           // use the arc image service instead...
           serviceSource = new ol.source.TileArcGISRest({
-            url: server.url
+            url: rest_url
           });
 
           // patch the web mercator projection.
@@ -936,7 +941,13 @@
           var attribution = new ol.Attribution({
             html: 'Tiles &copy; <a href="' + server.url + '">ArcGIS</a>'
           });
-          var serviceUrl = server.url + 'tile/{z}/{y}/{x}';
+
+          // ensure the trailing slash is set.
+          url = server.url;
+          if (url.substring(url.length - 1) !== '/') {
+            url += '/';
+          }
+          var serviceUrl = url + 'tile/{z}/{y}/{x}';
           var serviceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
