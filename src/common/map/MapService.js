@@ -1325,8 +1325,10 @@
       goog.object.extend(params, hash_view);
 
       if (configService_.configuration.map.projection === 'EPSG:4326') {
+        params['extent'] = [-180.0000, -90.0000, 180.0000, 90.0000];
         params['minZoom'] = 3;
       } else {
+        params['extent'] = [-20026376.39, -20048966.10, 20026376.39, 20048966.10];
         params['maxResolution'] = 40075016.68557849 / 2048;
       }
       return params;
