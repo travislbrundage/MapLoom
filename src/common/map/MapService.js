@@ -970,10 +970,15 @@
             console.log('====[ Error: could not create base layer.');
           }
         } else if (server.ptype === 'gxp_arcrestsource' && server.restConfig.capabilities.indexOf('Tilemap') < 0) {
+          // ensure the trailing slash is set.
+          var rest_url = server.url;
+          if (rest_url.substring(rest_url.length - 1) !== '/') {
+            rest_url += '/';
+          }
           // This arc service does not support tiled maps, so this will
           // use the arc image service instead...
           serviceSource = new ol.source.TileArcGISRest({
-            url: server.url
+            url: rest_url
           });
 
           // patch the web mercator projection.
@@ -1037,11 +1042,12 @@
             html: 'Tiles &copy; <a href="' + useProxyUrlParam(getUseProxyParam(server), server.url) + '">ArcGIS</a>'
           });
 
-          if (server.url.lastIndexOf('/') !== server.url.length - 1) {
-            server.url += '/';
+          // ensure the trailing slash is set.
+          url = server.url;
+          if (url.substring(url.length - 1) !== '/') {
+            url += '/';
           }
-
-          var serviceUrl = useProxyUrlParam(getUseProxyParam(server), server.url) + 'tile/{z}/{y}/{x}';
+          var serviceUrl = useProxyUrlParam(getUseProxyParam(server), url) + 'tile/{z}/{y}/{x}';
           var serviceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
@@ -1431,8 +1437,10 @@
       goog.object.extend(params, hash_view);
 
       if (configService_.configuration.map.projection === 'EPSG:4326') {
+        params['extent'] = [-180.0000, -90.0000, 180.0000, 90.0000];
         params['minZoom'] = 3;
       } else {
+        params['extent'] = [-20026376.39, -20048966.10, 20026376.39, 20048966.10];
         params['maxResolution'] = 40075016.68557849 / 2048;
       }
       return params;

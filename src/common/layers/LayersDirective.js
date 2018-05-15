@@ -77,6 +77,15 @@
               var exchangeMetadata = layer.get('exchangeMetadata');
               var has_perms = false;
               if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.permissions)) {
+                // check for any raster attributes.
+                var attrs = exchangeMetadata.attributes;
+                for (var i = 0, ii = attrs.length; i < ii; i++) {
+                  // exit early if a raster attribute is found.
+                  if (attrs[i].attribute_type === 'raster') {
+                    return false;
+                  }
+                }
+
                 var permissions = exchangeMetadata.permissions;
                 if (goog.isDefAndNotNull(permissions)) {
                   has_perms = permissions.edit_style;
@@ -176,6 +185,16 @@
 
             scope.getLayerAttributeVisibility = function(layer) {
               $rootScope.$broadcast('getLayerAttributeVisibility', layer);
+            };
+
+            scope.canZoom = function(layer) {
+              // ensure the projection is "zoomable".
+              var metadata = layer.get('metadata');
+              if (metadata.bbox) {
+                var layer_crs = metadata.bbox.crs ? metadata.bbox.crs : metadata.bbox.extent.crs;
+                return (ol.proj.get(layer_crs) !== undefined);
+              }
+              return false;
             };
 
             scope.updateStyleChoices = function(styleChoices) {

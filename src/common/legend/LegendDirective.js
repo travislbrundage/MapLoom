@@ -32,9 +32,7 @@
 
             scope.toggleLegend = function() {
               if (legendOpen === false) {
-                if (angular.element('.legend-item').length > 0) {
-                  openLegend();
-                }
+                openLegend();
               } else {
                 closeLegend();
               }
