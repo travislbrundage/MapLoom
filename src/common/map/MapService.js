@@ -824,11 +824,11 @@
               return wms_url;
             };
           }
-
+          var mapproxyMostSpecificUrl = serverService_.getMostSpecificUrl(server);
           layer = new ol.layer.Tile({
             metadata: {
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(getUseProxyParam(server), mostSpecificUrl) : undefined,
+              url: goog.isDefAndNotNull(mapproxyMostSpecificUrl) ? useProxyUrlParam(getUseProxyParam(server), mapproxyMostSpecificUrl) : undefined,
               title: fullConfig.title,
               extent: fullConfig['extent'],
               abstract: fullConfig.abstract,
@@ -977,7 +977,7 @@
           }
           // This arc service does not support tiled maps, so this will
           // use the arc image service instead...
-          serviceSource = new ol.source.TileArcGISRest({
+          var tilemapServiceSource = new ol.source.TileArcGISRest({
             url: rest_url,
             params: {
               'LAYERS': 'show:' + fullConfig.id
@@ -985,7 +985,7 @@
           });
 
           // patch the web mercator projection.
-          serviceSource.tileUrlFunction = function(tileCoord, pixelRatio, projection) {
+          tilemapServiceSource.tileUrlFunction = function(tileCoord, pixelRatio, projection) {
             var rest_proj = projection;
             if (rest_proj.getCode() === 'EPSG:900913') {
               rest_proj = ol.proj.get('EPSG:3857');
@@ -1007,7 +1007,7 @@
             bbox = fullConfig.extent;
           }
 
-          serviceSource = fixRequestUrl(serviceSource, server.use_proxy);
+          tilemapServiceSource = fixRequestUrl(tilemapServiceSource, server.use_proxy);
 
           layer = new ol.layer.Tile({
             metadata: {
@@ -1017,7 +1017,7 @@
               title: fullConfig.title
             },
             visible: minimalConfig.visibility,
-            source: serviceSource
+            source: tilemapServiceSource
           });
         } else if (server.ptype === 'gxp_arcrestsource') {
           if (fullConfig.bbox_left) {
@@ -1051,11 +1051,11 @@
             url += '/';
           }
           var serviceUrl = useProxyUrlParam(getUseProxyParam(server), url) + 'tile/{z}/{y}/{x}';
-          var serviceSource = null;
+          var arcrestServiceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
             var tileSize = 512;
-            serviceSource = new ol.source.XYZ({
+            arcrestServiceSource = new ol.source.XYZ({
               attributions: [attribution],
               maxZoom: 16,
               projection: projection,
@@ -1069,7 +1069,7 @@
               wrapX: true
             });
           } else {
-            serviceSource = new ol.source.XYZ({
+            arcrestServiceSource = new ol.source.XYZ({
               attributions: [attribution],
               maxZoom: 19,
               metadata: metadata,
@@ -1080,7 +1080,7 @@
           layer = new ol.layer.Tile({
             metadata: metadata,
             visible: minimalConfig.visibility,
-            source: serviceSource
+            source: arcrestServiceSource
           });
         } else if (server.ptype === 'gxp_tilejsonsource') {
           //currently we assume only one layer per 'server'
@@ -1124,7 +1124,7 @@
           nameSplit = (fullConfig.Name || fullConfig.name).split(':');
 
           // favor virtual service url when available
-          var mostSpecificUrl = server.url;
+          var wmscsourceMostSpecificUrl = server.url;
           var mostSpecificUrlWms = server.url;
           if (goog.isDefAndNotNull(server.isVirtualService) && server.isVirtualService === true) {
             mostSpecificUrlWms = server.virtualServiceUrl;
@@ -1134,7 +1134,7 @@
           if (goog.isDefAndNotNull(mostSpecificUrlWms)) {
             var urlIndex = mostSpecificUrlWms.lastIndexOf('/');
             if (urlIndex !== -1) {
-              mostSpecificUrl = mostSpecificUrlWms.slice(0, urlIndex);
+              wmscsourceMostSpecificUrl = mostSpecificUrlWms.slice(0, urlIndex);
             }
           }
 
@@ -1200,7 +1200,7 @@
             metadata: {
               serverId: server.id,
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? useProxyUrlParam(getUseProxyParam(server), mostSpecificUrl) : undefined,
+              url: goog.isDefAndNotNull(wmscsourceMostSpecificUrl) ? useProxyUrlParam(getUseProxyParam(server), wmscsourceMostSpecificUrl) : undefined,
               title: fullConfig.Title || fullConfig.title,
               abstract: fullConfig.Abstract || fullConfig.abstract,
               keywords: fullConfig.KeywordList,
@@ -1218,7 +1218,7 @@
           });
 
           // Test if layer is read-only
-          if (goog.isDefAndNotNull(mostSpecificUrl)) {
+          if (goog.isDefAndNotNull(wmscsourceMostSpecificUrl)) {
             layer.get('metadata').readOnly = true;
             var testReadOnly = function() {
               var wfsRequestData = '<?xml version="1.0" encoding="UTF-8"?> ' +
