@@ -788,11 +788,11 @@
               return wms_url;
             };
           }
-
+          var mapproxyMostSpecificUrl = serverService_.getMostSpecificUrl(server);
           layer = new ol.layer.Tile({
             metadata: {
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? mostSpecificUrl : undefined,
+              url: goog.isDefAndNotNull(mapproxyMostSpecificUrl) ? mapproxyMostSpecificUrl : undefined,
               title: fullConfig.title,
               extent: fullConfig['extent'],
               abstract: fullConfig.abstract,
@@ -881,12 +881,12 @@
           }
           // This arc service does not support tiled maps, so this will
           // use the arc image service instead...
-          serviceSource = new ol.source.TileArcGISRest({
+          var tilemapServiceSource = new ol.source.TileArcGISRest({
             url: rest_url
           });
 
           // patch the web mercator projection.
-          serviceSource.tileUrlFunction = function(tileCoord, pixelRatio, projection) {
+          tilemapServiceSource.tileUrlFunction = function(tileCoord, pixelRatio, projection) {
             var rest_proj = projection;
             if (rest_proj.getCode() === 'EPSG:900913') {
               rest_proj = ol.proj.get('EPSG:3857');
@@ -916,7 +916,7 @@
               title: fullConfig.title
             },
             visible: minimalConfig.visibility,
-            source: serviceSource
+            source: tilemapServiceSource
           });
         } else if (server.ptype === 'gxp_arcrestsource') {
           if (fullConfig.bbox_left) {
@@ -949,11 +949,11 @@
             url += '/';
           }
           var serviceUrl = url + 'tile/{z}/{y}/{x}';
-          var serviceSource = null;
+          var arcrestServiceSource = null;
           if (server.proj === 'EPSG:4326') {
             var projection = ol.proj.get('EPSG:4326');
             var tileSize = 512;
-            serviceSource = new ol.source.XYZ({
+            arcrestServiceSource = new ol.source.XYZ({
               attributions: [attribution],
               maxZoom: 16,
               projection: projection,
@@ -967,7 +967,7 @@
               wrapX: true
             });
           } else {
-            serviceSource = new ol.source.XYZ({
+            arcrestServiceSource = new ol.source.XYZ({
               attributions: [attribution],
               maxZoom: 19,
               metadata: metadata,
@@ -978,7 +978,7 @@
           layer = new ol.layer.Tile({
             metadata: metadata,
             visible: minimalConfig.visibility,
-            source: serviceSource
+            source: arcrestServiceSource
           });
         } else if (server.ptype === 'gxp_tilejsonsource') {
           //currently we assume only one layer per 'server'
@@ -1020,7 +1020,7 @@
           nameSplit = (fullConfig.Name || fullConfig.name).split(':');
 
           // favor virtual service url when available
-          var mostSpecificUrl = server.url;
+          var wmscsourceMostSpecificUrl = server.url;
           var mostSpecificUrlWms = server.url;
           if (goog.isDefAndNotNull(server.isVirtualService) && server.isVirtualService === true) {
             mostSpecificUrlWms = server.virtualServiceUrl;
@@ -1030,7 +1030,7 @@
           if (goog.isDefAndNotNull(mostSpecificUrlWms)) {
             var urlIndex = mostSpecificUrlWms.lastIndexOf('/');
             if (urlIndex !== -1) {
-              mostSpecificUrl = mostSpecificUrlWms.slice(0, urlIndex);
+              wmscsourceMostSpecificUrl = mostSpecificUrlWms.slice(0, urlIndex);
             }
           }
 
@@ -1097,7 +1097,7 @@
             metadata: {
               serverId: server.id,
               name: minimalConfig.name,
-              url: goog.isDefAndNotNull(mostSpecificUrl) ? mostSpecificUrl : undefined,
+              url: goog.isDefAndNotNull(wmscsourceMostSpecificUrl) ? wmscsourceMostSpecificUrl : undefined,
               title: fullConfig.Title,
               abstract: fullConfig.Abstract,
               keywords: fullConfig.KeywordList,
@@ -1115,7 +1115,7 @@
           });
 
           // Test if layer is read-only
-          if (goog.isDefAndNotNull(mostSpecificUrl)) {
+          if (goog.isDefAndNotNull(wmscsourceMostSpecificUrl)) {
             layer.get('metadata').readOnly = true;
             var testReadOnly = function() {
               var wfsRequestData = '<?xml version="1.0" encoding="UTF-8"?> ' +
