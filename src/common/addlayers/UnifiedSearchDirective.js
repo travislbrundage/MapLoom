@@ -436,47 +436,6 @@
 
               if (response.data && response.data.objects) {
                 scope.searchResults = response.data.objects;
-                /*
-                var layers = response.data.objects;
-                var results = [];
-
-                for (var i = 0, ii = layers.length; i < ii; i++) {
-                  var layer = layers[i];
-                  // filter out maps, documents, etc.
-                  if (layer.type === 'layer') {
-                    results.push(layer);
-                  }
-                }
-                scope.searchResults = results;
-                */
-                /*
-                // reset the current layers list for both servers.
-                servers.geoserver.layersConfig = [];
-                servers.registry.layersConfig = [];
-
-                // sort the layers into the appropriate 'bins',
-                //  registry layers are really from the registry index,
-                //  exchange layers are really from the local geoserver/geonode
-                //    instance.
-                var layers = response.data.objects;
-                for (var i = 0, ii = layers.length; i < ii; i++) {
-                  var layer = layers[i];
-                  var index_name = 'layer-index';
-                  if (goog.isDefAndNotNull(layer.registry_url)) {
-                    index_name = 'registry';
-                  }
-                  // ensure that maps and documents are excluded from the search results.
-                  if (index_name == 'registry' || layer.type == 'layer') {
-                    layers_by_index[index_name].push(layer);
-                  }
-                }
-
-                // convert the results from the search using the appropriate
-                //  utilty functions.
-                servers.geoserver.layersConfig = serverService.createGeonodeSearchLayerObjects(layers_by_index['layer-index'], servers.geoserver.id);
-                servers.registry.layersConfig = serverService.createHyperSearchLayerObjects(layers_by_index['registry'], servers.registry.id);
-                */
-
               }
             };
 
