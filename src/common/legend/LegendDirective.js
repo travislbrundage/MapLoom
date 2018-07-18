@@ -114,23 +114,7 @@
               } else {
                 domain = server.url;
               }
-              // Proxy the domain if appropriate
-              var getUseProxyParam = function(server) {
-                return goog.isDefAndNotNull(server.use_proxy) ? server.use_proxy : false;
-              };
-              // proxy a url if the souce parameters indicate to do so
-              var useProxyUrlParam = function(use_proxy, url) {
-                if (goog.isDefAndNotNull(use_proxy) && use_proxy === true) {
-                  url = decodeURIComponent(url);
-                  if (url.indexOf(configService.configuration.proxy) < 0) {
-                    url = configService.configuration.proxy + encodeURIComponent(url);
-                  } else {
-                    url = encodeURIComponent(url);
-                  }
-                }
-                return url;
-              };
-              domain = useProxyUrlParam(getUseProxyParam(server), domain);
+              domain = useProxyUrlParam(getUseProxyParam(server), domain, configService);
               var params = {
                 request: 'GetLegendGraphic',
                 format: 'image/png',
