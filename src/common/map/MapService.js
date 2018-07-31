@@ -708,6 +708,27 @@
       var nameSplit = null;
       var url = null;
       var bbox;
+      // allow for a XYZ to be directly added to the map
+      if (minimalConfig.type === 'OpenLayers.Layer.XYZ' && minimalConfig.args[1].toString().indexOf('http') == 0) {
+        url = minimalConfig.args[1].toString();
+        layer = new ol.layer.Tile({
+          metadata: {
+            serverId: 'xyz',
+            name: minimalConfig.name,
+            title: minimalConfig.name
+          },
+          visible: minimalConfig.visibility,
+          source: new ol.source.XYZ({
+            url: url,
+            attributions: [
+              new ol.Attribution({
+                html: minimalConfig.args[2].attribution
+              })
+            ]
+          })
+        });
+        return layer;
+      }
       if (!goog.isDefAndNotNull(fullConfig)) {
         //dialogService_.error(translate_.instant('map_layers'), translate_.instant('load_layer_failed',
         //    {'layer': minimalConfig.name}), [translate_.instant('btn_ok')], false);
