@@ -709,8 +709,7 @@
       var url = null;
       var bbox;
       // allow for a XYZ to be directly added to the map
-      if (minimalConfig.type === 'OpenLayers.Layer.XYZ' && minimalConfig.args[1].toString().startsWith('http')) {
-        console.log(minimalConfig);
+      if (minimalConfig.type === 'OpenLayers.Layer.XYZ' && minimalConfig.args[1].toString().indexOf('http') == 0) {
         url = minimalConfig.args[1].toString();
         layer = new ol.layer.Tile({
           metadata: {
