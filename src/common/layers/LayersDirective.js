@@ -87,7 +87,8 @@
                 }
 
                 var permissions = exchangeMetadata.permissions;
-                if (goog.isDefAndNotNull(permissions)) {
+                var is_remote = exchangeMetadata.remote;
+                if (goog.isDefAndNotNull(permissions) && !is_remote) {
                   has_perms = permissions.edit_style;
                 }
               }
