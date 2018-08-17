@@ -934,7 +934,7 @@
               serverId: server.id,
               name: minimalConfig.name,
               bbox: bbox,
-              title: fullConfig.title
+              title: fullConfig.Title
             },
             visible: minimalConfig.visibility,
             source: tilemapServiceSource
