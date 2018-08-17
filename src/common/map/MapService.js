@@ -934,7 +934,7 @@
               serverId: server.id,
               name: minimalConfig.name,
               bbox: bbox,
-              title: fullConfig.Title
+              title: fullConfig.Title || fullConfig.title
             },
             visible: minimalConfig.visibility,
             source: tilemapServiceSource
@@ -958,7 +958,7 @@
             serverId: server.id,
             name: minimalConfig.name,
             bbox: bbox,
-            title: fullConfig.Title
+            title: fullConfig.Title || fullConfig.title
           };
           var attribution = new ol.Attribution({
             html: 'Tiles &copy; <a href="' + server.url + '">ArcGIS</a>'
