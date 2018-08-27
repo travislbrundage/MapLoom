@@ -1119,7 +1119,7 @@
               serverId: server.id,
               name: minimalConfig.name,
               url: goog.isDefAndNotNull(wmscsourceMostSpecificUrl) ? wmscsourceMostSpecificUrl : undefined,
-              title: fullConfig.Title,
+              title: fullConfig.Title || fullConfig.title,
               abstract: fullConfig.Abstract,
               keywords: fullConfig.KeywordList,
               workspace: nameSplit.length > 1 ? nameSplit[0] : '',
