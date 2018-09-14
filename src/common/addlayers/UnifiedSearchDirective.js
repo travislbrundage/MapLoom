@@ -736,7 +736,11 @@
                   });
                 } else {
                   layer.add = true;
-                  layer.name = layer.typename;
+                  if (layer.typename.split(':').length === 2) {
+                    layer.name = layer.typename.split(':')[1];
+                  } else {
+                    layer.name = layer.typename;
+                  }
                   LayersService.addLayer(layer, server_to_use.id, server_to_use);
                 }
               });
