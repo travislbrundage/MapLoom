@@ -625,11 +625,14 @@ var SERVER_SERVICE_USE_PROXY = true;
         }
         if (hasConfig) {
           layerConfig = layersConfig[index];
+          var map_crs = configService_.configuration.map.projection;
           if (goog.isDefAndNotNull(layerConfig.CRS)) {
             for (var code in layerConfig.CRS) {
               if (layerConfig.CRS[code] !== 'CRS:84') {
-                layerConfig.CRS = [layerConfig.CRS[code]];
-                break;
+                if (layerConfig.CRS[code] === map_crs) {
+                  layerConfig.CRS = [layerConfig.CRS[code]];
+                  break;
+                }
               }
             }
           }
