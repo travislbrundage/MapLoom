@@ -987,7 +987,7 @@
           var tilemapServiceSource = new ol.source.TileArcGISRest({
             url: rest_url,
             params: {
-                'LAYERS': 'show:' + fullConfig.id
+              'LAYERS': 'show:' + fullConfig.id
             }
           });
 
@@ -1094,7 +1094,7 @@
           var jsontile_source = server.layersConfig[0].TileJSONSource;
 
           if (goog.isDefAndNotNull(jsontile_source)) {
-          // TODO: Do we want to override the url in fullConfig.sourceParams?
+            // TODO: Do we want to override the url in fullConfig.sourceParams?
             layer = new ol.layer.Tile({
               metadata: {
                 serverId: server.id,
