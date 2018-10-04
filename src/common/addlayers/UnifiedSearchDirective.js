@@ -728,9 +728,21 @@
                     // pick the "best of", different version of the code will
                     //  or will not prefix the data source in the typename vs in the name.
                     if (layer_def.name.split(':').length < layer_def.typename.split(':').length) {
-                      layer.name = layer_def.name;
+                      if (layer_def.typename.split(':').length === 2) {
+                        layer.name = layer_def.typename.split(':')[1];
+                      } else if (layer_def.typename.split(':').length === 3) {
+                        layer.name = layer_def.typename.split(':')[2];
+                      } else {
+                        layer.name = layer_def.typename;
+                      }
                     } else {
-                      layer.name = layer_def.typename;
+                      if (layer_def.typename.split(':').length === 2) {
+                        layer.name = layer_def.typename.split(':')[1];
+                      } else if (layer_def.typename.split(':').length === 3) {
+                        layer.name = layer_def.typename.split(':')[2];
+                      } else {
+                        layer.name = layer_def.typename;
+                      }
                     }
                     LayersService.addLayer(layer, server.id, server);
                   });
@@ -738,6 +750,8 @@
                   layer.add = true;
                   if (layer.typename.split(':').length === 2) {
                     layer.name = layer.typename.split(':')[1];
+                  } else if (layer.typename.split(':').length === 3) {
+                    layer.name = layer.typename.split(':')[2];
                   } else {
                     layer.name = layer.typename;
                   }
